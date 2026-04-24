@@ -19,15 +19,15 @@
 
 ### 다음 단계 (우선순위 순)
 
-1. **필수 core skills 포팅** (~/.claude/skills → .claude/skills)
-   - `setup-workspace` (신규 — 대화형 CLAUDE.md 채우기)
-   - `daily-note`
-   - `daily-review`
-   - `todo`
-   - `todos`
-   - `thinking-partner`
-   - `idea`
-   - `weekly-synthesis`
+1. **필수 core skills 포팅** ✅ 완료 (2026-04-24)
+   - [x] `setup-workspace` (신규 설계)
+   - [x] `daily-note` (선이 섹션/PKM_ROOT 제거, gcalcli optional)
+   - [x] `daily-review` (프로젝트별 하드코딩 제거, 카테고리 그룹핑)
+   - [x] `todo` (Google Tasks 의존성 제거)
+   - [x] `todos` (Google Tasks/IMI/GPTers 예시 제거)
+   - [x] `thinking-partner` (경미한 범용화)
+   - [x] `idea` (33-insights → 43-ideas 경로 조정, wiki 승격 판단 추가)
+   - [x] `weekly-synthesis` (경미한 범용화, Mac/Linux 호환성)
 
 2. **확장 skills (워크숍에서 쓰이는 것)**
    - `csv-clean`

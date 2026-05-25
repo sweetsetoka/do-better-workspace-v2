@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>주간 매장 운영 리뷰 · 5/12-5/18</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ===== Design tokens (Lush) ===== */
+  :root {
+    --canvas: #FFFFFF;
+    --body: #1A1A1A;
+    --body-soft: #4A4A4A;
+    --muted: #888888;
+    --lush-red: #E2231A;
+    --surface-soft: #FAF6EE;
+    --surface-card: #F5F0E5;
+    --surface-elev: #EDE5D5;
+    --hairline: #E5E0D5;
+    --hairline-strong: #C9C2B2;
+    --alert-red: #E2231A;
+    --alert-yellow: #B58E00;
+    --alert-green: #2D8A3E;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--body);
+    background: #d9d4c8;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-size: 10pt;
+    line-height: 1.5;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  .page, .cover {
+    width: 210mm;
+    height: 297mm;
+    background: var(--canvas);
+    margin: 8mm auto;
+    padding: 18mm 18mm 14mm 18mm;
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== Cover ===== */
+  .cover {
+    background: var(--canvas);
+    padding: 24mm 22mm;
+  }
+  .cover-brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--hairline);
+    padding-bottom: 8mm;
+  }
+  .cover-logo {
+    font-weight: 700;
+    font-size: 22pt;
+    letter-spacing: 1.5px;
+    color: var(--lush-red);
+  }
+  .cover-meta {
+    font-size: 9pt;
+    color: var(--muted);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .cover-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-top: -20mm;
+  }
+  .cover-label {
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--lush-red);
+    text-transform: uppercase;
+    margin-bottom: 10mm;
+  }
+  .cover-title {
+    font-size: 44pt;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.5px;
+    color: var(--body);
+    margin-bottom: 4mm;
+  }
+  .cover-title em {
+    font-style: normal;
+    color: var(--lush-red);
+  }
+  .cover-handwritten {
+    font-family: 'Caveat', 'Gowun Dodum', cursive;
+    font-size: 22pt;
+    font-weight: 600;
+    color: var(--lush-red);
+    margin-top: 4mm;
+  }
+  .cover-period {
+    font-size: 14pt;
+    font-weight: 400;
+    color: var(--body-soft);
+    margin-top: 8mm;
+    letter-spacing: -0.2px;
+  }
+  .cover-red-line {
+    width: 60mm;
+    height: 4px;
+    background: var(--lush-red);
+    margin-top: 12mm;
+  }
+  .cover-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-top: 8mm;
+    border-top: 1px solid var(--hairline);
+    font-size: 8.5pt;
+    color: var(--body-soft);
+  }
+  .cover-foot .author {
+    font-weight: 700;
+    font-size: 10pt;
+    color: var(--body);
+  }
+  .cover-foot .role {
+    color: var(--muted);
+    font-size: 8.5pt;
+    margin-top: 1mm;
+  }
+  .cover-foot .right {
+    text-align: right;
+  }
+
+  /* ===== Page header/footer ===== */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 4mm;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 6mm;
+    font-size: 8pt;
+    color: var(--muted);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .page-header .brand {
+    color: var(--lush-red);
+    font-weight: 700;
+    letter-spacing: 1.5px;
+  }
+  .page-content {
+    flex: 1;
+  }
+  .page-footer {
+    margin-top: 4mm;
+    padding-top: 3mm;
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    justify-content: space-between;
+    font-size: 8pt;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+  .page-footer .num { font-weight: 700; }
+
+  /* ===== Typography ===== */
+  .section-tag {
+    display: inline-block;
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--lush-red);
+    margin-bottom: 3mm;
+  }
+  h1.report-title {
+    font-size: 22pt;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+    margin-bottom: 2mm;
+  }
+  h2 {
+    font-size: 14pt;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-top: 6mm;
+    margin-bottom: 3mm;
+    color: var(--body);
+    position: relative;
+    padding-bottom: 2mm;
+  }
+  h2.red-underline::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 18mm;
+    height: 3px;
+    background: var(--lush-red);
+  }
+  h3 {
+    font-size: 11pt;
+    font-weight: 700;
+    margin-top: 4mm;
+    margin-bottom: 2mm;
+    color: var(--body);
+  }
+  p {
+    font-size: 9.5pt;
+    line-height: 1.6;
+    color: var(--body);
+    margin-bottom: 2mm;
+  }
+  p.lede {
+    font-size: 10pt;
+    line-height: 1.6;
+    color: var(--body);
+    margin-bottom: 4mm;
+  }
+  p.small {
+    font-size: 8.5pt;
+    color: var(--body-soft);
+    line-height: 1.5;
+  }
+  p.interpretation {
+    font-size: 9pt;
+    line-height: 1.55;
+    color: var(--body);
+    background: var(--surface-soft);
+    padding: 3mm 4mm;
+    border-left: 3px solid var(--body);
+    margin-top: 2mm;
+    margin-bottom: 4mm;
+  }
+  p.interpretation strong { color: var(--body); }
+  .handwritten {
+    font-family: 'Caveat', 'Gowun Dodum', cursive;
+    font-size: 15pt;
+    font-weight: 600;
+    color: var(--lush-red);
+  }
+
+  /* ===== Tables ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+    margin-top: 1mm;
+    margin-bottom: 3mm;
+    font-variant-numeric: tabular-nums;
+  }
+  th {
+    background: var(--body);
+    color: var(--canvas);
+    font-weight: 700;
+    text-align: left;
+    padding: 2.2mm 2.5mm;
+    font-size: 8pt;
+    letter-spacing: 0.3px;
+    border: none;
+  }
+  th.num, td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  th.center, td.center { text-align: center; }
+  td {
+    padding: 2mm 2.5mm;
+    border-bottom: 1px solid var(--hairline);
+    color: var(--body);
+    vertical-align: top;
+    line-height: 1.45;
+  }
+  tr:last-child td { border-bottom: 1px solid var(--hairline-strong); }
+  td.name { font-weight: 700; }
+  .signal {
+    display: inline-block;
+    width: 4.5mm;
+    height: 4.5mm;
+    border-radius: 50%;
+    text-align: center;
+  }
+  .signal.green { background: var(--alert-green); }
+  .signal.yellow { background: var(--alert-yellow); }
+  .signal.red { background: var(--alert-red); }
+  .delta-down { color: var(--alert-red); font-weight: 700; }
+  .delta-up { color: var(--alert-green); font-weight: 700; }
+  .delta-flat { color: var(--body-soft); }
+  .num-strong { font-weight: 700; }
+
+  /* ===== Spec cells (KPI strip) ===== */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3mm;
+    margin-top: 2mm;
+    margin-bottom: 5mm;
+  }
+  .kpi-cell {
+    background: var(--surface-soft);
+    border-radius: 4px;
+    padding: 4mm 4mm;
+  }
+  .kpi-cell .label {
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2mm;
+  }
+  .kpi-cell .value {
+    font-size: 16pt;
+    font-weight: 700;
+    line-height: 1.05;
+    color: var(--body);
+    font-variant-numeric: tabular-nums;
+  }
+  .kpi-cell .sub {
+    font-size: 8pt;
+    color: var(--body-soft);
+    margin-top: 1mm;
+  }
+  .kpi-cell.red .value { color: var(--lush-red); }
+
+  /* ===== Alert callouts ===== */
+  .callout {
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-left: 4px solid var(--alert-red);
+    border-radius: 4px;
+    padding: 3.5mm 4mm;
+    margin-bottom: 3mm;
+  }
+  .callout.yellow { border-left-color: var(--alert-yellow); }
+  .callout.green { border-left-color: var(--alert-green); }
+  .callout-head {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: var(--body);
+    margin-bottom: 1.5mm;
+  }
+  .callout-body {
+    font-size: 8.8pt;
+    line-height: 1.55;
+    color: var(--body);
+  }
+  .callout-body .meta {
+    font-size: 8pt;
+    color: var(--body-soft);
+    margin-top: 1.5mm;
+  }
+  .callout-body ul {
+    margin-top: 1.5mm;
+    margin-left: 4mm;
+  }
+  .callout-body ul li {
+    margin-bottom: 0.8mm;
+  }
+
+  /* ===== Q&A blocks ===== */
+  .qa {
+    border-left: 3px solid var(--body);
+    padding-left: 4mm;
+    margin-bottom: 4mm;
+  }
+  .qa .q {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: var(--body);
+    margin-bottom: 1.5mm;
+  }
+  .qa .a {
+    font-size: 9pt;
+    line-height: 1.55;
+    color: var(--body);
+  }
+  .qa .a ul {
+    margin-left: 4mm;
+    margin-top: 1mm;
+  }
+  .qa .a li { margin-bottom: 0.6mm; }
+
+  /* ===== Quote (VOC) ===== */
+  .voc-block {
+    background: var(--surface-soft);
+    border-radius: 4px;
+    padding: 4mm 5mm;
+    margin-bottom: 3mm;
+  }
+  .voc-block.red {
+    background: #FAF0EF;
+  }
+  .voc-block h4 {
+    font-size: 9pt;
+    font-weight: 700;
+    color: var(--body);
+    margin-bottom: 2mm;
+    text-transform: none;
+  }
+  .voc-block .voc-row {
+    font-size: 8.5pt;
+    color: var(--body);
+    margin-bottom: 1.2mm;
+    line-height: 1.45;
+  }
+  .voc-block .voc-row .date {
+    color: var(--muted);
+    font-weight: 700;
+    margin-right: 2mm;
+  }
+
+  /* ===== Two columns ===== */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5mm;
+  }
+
+  /* ===== Closing ===== */
+  .closing-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .closing-handwritten {
+    font-family: 'Caveat', cursive;
+    font-size: 36pt;
+    font-weight: 600;
+    color: var(--lush-red);
+    margin-bottom: 6mm;
+  }
+  .closing-title {
+    font-size: 18pt;
+    font-weight: 700;
+    color: var(--body);
+    margin-bottom: 4mm;
+  }
+  .closing-sub {
+    font-size: 10pt;
+    color: var(--body-soft);
+    line-height: 1.6;
+    max-width: 110mm;
+  }
+  .closing-line {
+    width: 40mm;
+    height: 4px;
+    background: var(--lush-red);
+    margin: 10mm 0;
+  }
+
+  /* ===== Print rules ===== */
+  @media print {
+    body { background: var(--canvas); }
+    .page, .cover { margin: 0; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<div class="cover">
+  <div class="cover-brand">
+    <div class="cover-logo">LUSH</div>
+    <div class="cover-meta">Korea · Retail HQ</div>
+  </div>
+
+  <div class="cover-body">
+    <div class="cover-label">Weekly Store Review</div>
+    <h1 class="cover-title">
+      주간 매장 운영 <em>Review</em><br>
+      <span class="cover-handwritten">10 stores, one week.</span>
+    </h1>
+    <div class="cover-period">2026년 5월 12일 (화) — 5월 18일 (월)</div>
+    <div class="cover-red-line"></div>
+  </div>
+
+  <div class="cover-foot">
+    <div>
+      <div class="author">조현숙 (Curls)</div>
+      <div class="role">리테일본부 매니저 · 본부장 미팅 보고서</div>
+    </div>
+    <div class="right">
+      <div class="author">2026.05.21 (월) 11:00</div>
+      <div class="role">본부장 미팅용 · Internal Only</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PAGE 1: 헤더 + 매장 순위표 ============ -->
+<div class="page">
+  <div class="page-header">
+    <span class="brand">LUSH · Weekly Store Review</span>
+    <span>5/12 — 5/18 · 주간 매장 운영 리뷰</span>
+  </div>
+
+  <div class="page-content">
+    <div class="section-tag">Section 01 · Overview</div>
+    <h1 class="report-title">한 주의 결론은 <em style="color:var(--lush-red); font-style:normal;">어버이날 반동</em>.</h1>
+
+    <p class="lede">지난 주(5/12-5/18) 10개 매장 합산 매출 <strong>2.00억원</strong>, 전주(어버이날 wrap-up 포함) 대비 <span class="delta-down">-33.5%</span>. 가장 큰 변동은 <strong>여의도IFC -41.7%</strong>, 카테고리는 <strong>기프트 -59.9%</strong> (어버이날 캠페인 종료 직격). 매장 유형(flagship · dept · street · mall) 전반에 걸쳐 -30~-35%로 균일하게 빠진 패턴이라 매장 운영 이슈보다는 <strong>시즌 반동이 주된 동인</strong>으로 본다.</p>
+
+    <div class="kpi-strip">
+      <div class="kpi-cell">
+        <div class="label">Total Sales</div>
+        <div class="value">2.00억</div>
+        <div class="sub">10개 매장 합산</div>
+      </div>
+      <div class="kpi-cell red">
+        <div class="label">WoW Change</div>
+        <div class="value">-33.5%</div>
+        <div class="sub">vs 5/5-5/11</div>
+      </div>
+      <div class="kpi-cell red">
+        <div class="label">Gift Category</div>
+        <div class="value">-59.9%</div>
+        <div class="sub">어버이날 반동</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="label">Worst Store</div>
+        <div class="value">-41.7%</div>
+        <div class="sub">여의도IFC</div>
+      </div>
+    </div>
+
+    <h2 class="red-underline">매장 순위표 <span style="font-weight:400; font-size:10pt; color:var(--muted);">· 이번주 매출 내림차순</span></h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:6%;">#</th>
+          <th style="width:14%;">매장</th>
+          <th style="width:9%;">유형</th>
+          <th class="num" style="width:13%;">매출(원)</th>
+          <th class="num" style="width:9%;">전주 대비</th>
+          <th class="num" style="width:8%;">객수</th>
+          <th class="num" style="width:11%;">객단가(원)</th>
+          <th class="num" style="width:10%;">트래픽</th>
+          <th class="num" style="width:9%;">전환율</th>
+          <th class="center" style="width:6%;">신호</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td class="name">명동본점</td><td>flagship</td><td class="num">34,516,056</td><td class="num delta-down">-35.5%</td><td class="num">1,144</td><td class="num">30,171</td><td class="num">6,001</td><td class="num">19.1%</td><td class="center"><span class="signal yellow"></span></td></tr>
+        <tr><td>2</td><td class="name">강남신세계</td><td>dept</td><td class="num">29,597,773</td><td class="num delta-down">-30.8%</td><td class="num">1,001</td><td class="num">29,568</td><td class="num">4,607</td><td class="num">21.7%</td><td class="center"><span class="signal yellow"></span></td></tr>
+        <tr><td>3</td><td class="name">잠실롯데</td><td>dept</td><td class="num">24,117,103</td><td class="num delta-down">-38.0%</td><td class="num">768</td><td class="num num-strong">31,402</td><td class="num">4,021</td><td class="num">19.1%</td><td class="center"><span class="signal green"></span></td></tr>
+        <tr><td>4</td><td class="name">현대판교</td><td>dept</td><td class="num">23,342,900</td><td class="num delta-down">-30.1%</td><td class="num">778</td><td class="num">30,004</td><td class="num">3,459</td><td class="num num-strong">22.5%</td><td class="center"><span class="signal yellow"></span></td></tr>
+        <tr><td>5</td><td class="name">스타필드하남</td><td>mall</td><td class="num">22,219,603</td><td class="num delta-down">-28.0%</td><td class="num">760</td><td class="num">29,236</td><td class="num">3,875</td><td class="num">19.6%</td><td class="center"><span class="signal yellow"></span></td></tr>
+        <tr><td>6</td><td class="name">홍대</td><td>street</td><td class="num">16,576,081</td><td class="num delta-down">-30.4%</td><td class="num">570</td><td class="num">29,081</td><td class="num">4,000</td><td class="num">14.2%</td><td class="center"><span class="signal yellow"></span></td></tr>
+        <tr><td>7</td><td class="name">코엑스</td><td>mall</td><td class="num">14,461,264</td><td class="num delta-down">-34.1%</td><td class="num">508</td><td class="num">28,467</td><td class="num">3,366</td><td class="num">15.1%</td><td class="center"><span class="signal red"></span></td></tr>
+        <tr><td>8</td><td class="name">신세계센텀</td><td>dept</td><td class="num">14,359,931</td><td class="num delta-down">-32.3%</td><td class="num">483</td><td class="num">29,731</td><td class="num">2,763</td><td class="num">17.5%</td><td class="center"><span class="signal yellow"></span></td></tr>
+        <tr><td>9</td><td class="name">여의도IFC</td><td>mall</td><td class="num">11,845,096</td><td class="num delta-down num-strong">-41.7%</td><td class="num">431</td><td class="num">27,483</td><td class="num">2,864</td><td class="num">15.0%</td><td class="center"><span class="signal red"></span></td></tr>
+        <tr><td>10</td><td class="name">현대대구</td><td>dept</td><td class="num">9,513,586</td><td class="num delta-down">-36.7%</td><td class="num">348</td><td class="num">27,338</td><td class="num">2,103</td><td class="num">16.5%</td><td class="center"><span class="signal red"></span></td></tr>
+      </tbody>
+    </table>
+    <p class="small"><strong>신호 기준</strong> · 🟢 호조 = 카테고리 시그널 있음 (잠실=기프트 +11.2%) · 🟡 주의 = 시즌 반동 평균 수준 (-25~-35%) · 🔴 경고 = 평균 이하 하락(-35% 초과) 또는 VOC 불만 3건 이상.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>LUSH Korea · Internal</span>
+    <span class="num">01 / 06</span>
+  </div>
+</div>
+
+<!-- ============ PAGE 2: 카테고리 흐름 + 매장 유형별 ============ -->
+<div class="page">
+  <div class="page-header">
+    <span class="brand">LUSH · Weekly Store Review</span>
+    <span>5/12 — 5/18 · 주간 매장 운영 리뷰</span>
+  </div>
+
+  <div class="page-content">
+    <div class="section-tag">Section 02 · Category Flow</div>
+    <h2 class="red-underline">카테고리 흐름 <span style="font-weight:400; font-size:10pt; color:var(--muted);">· 이번주 vs 전주 vs 어버이날 절정주 (4/28-5/4)</span></h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:18%;">카테고리</th>
+          <th class="num" style="width:18%;">이번주 매출</th>
+          <th class="num" style="width:10%;">비중</th>
+          <th class="num" style="width:18%;">전주 대비</th>
+          <th class="num" style="width:18%;">어버이날주 대비</th>
+          <th style="width:18%;">신호</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="name">기프트</td><td class="num">44,457,338</td><td class="num">22.2%</td><td class="num delta-down num-strong">-59.9%</td><td class="num delta-down">-17.4%</td><td><span class="small">어버이날 직격</span></td></tr>
+        <tr><td class="name">배쓰밤</td><td class="num">39,376,346</td><td class="num">19.6%</td><td class="num delta-down">-18.4%</td><td class="num delta-down">-6.5%</td><td><span class="small">정상 반동</span></td></tr>
+        <tr><td class="name">페이스마스크</td><td class="num">26,088,819</td><td class="num">13.0%</td><td class="num delta-down">-19.3%</td><td class="num delta-down">-7.5%</td><td><span class="small">정상 반동</span></td></tr>
+        <tr><td class="name">샴푸바</td><td class="num">22,838,369</td><td class="num">11.4%</td><td class="num delta-down">-13.0%</td><td class="num delta-up num-strong">+1.8%</td><td><span class="small">시즌 비의존</span></td></tr>
+        <tr><td class="name">비누</td><td class="num">12,471,603</td><td class="num">6.2%</td><td class="num delta-down">-14.1%</td><td class="num delta-up num-strong">+3.2%</td><td><span class="small">시즌 비의존</span></td></tr>
+        <tr><td class="name">샤워젤</td><td class="num">11,894,833</td><td class="num">5.9%</td><td class="num delta-down">-17.5%</td><td class="num delta-down">-4.1%</td><td><span class="small">정상 반동</span></td></tr>
+        <tr><td class="name">헤어</td><td class="num">11,755,222</td><td class="num">5.9%</td><td class="num delta-down">-23.8%</td><td class="num delta-down">-5.2%</td><td><span class="small">정상 반동</span></td></tr>
+        <tr><td class="name">마사지바</td><td class="num">11,186,077</td><td class="num">5.6%</td><td class="num delta-down">-16.4%</td><td class="num delta-down">-4.0%</td><td><span class="small">정상 반동</span></td></tr>
+      </tbody>
+    </table>
+
+    <p class="interpretation"><strong>한 줄 해석.</strong> 기프트가 WoW -60% 정상 반동. 그러나 어버이날 절정주(4/28-5/4) 대비로는 -17%만 빠짐 — <strong>기프트 수요가 어버이날에만 의존한 게 아니라 5월 가족 외출 시즌 전체에 깔려 있다</strong>는 뜻. 샴푸바·비누는 어버이날 절정주보다 오히려 늘었음 → 시즌 비의존 베이스 확인.</p>
+
+    <div class="section-tag" style="margin-top:6mm;">Section 03 · Store Type</div>
+    <h2 class="red-underline">매장 유형별 <span style="font-weight:400; font-size:10pt; color:var(--muted);">· 시즌 반동 균일성 검증</span></h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:22%;">유형</th>
+          <th class="num" style="width:14%;">매장 수</th>
+          <th class="num" style="width:24%;">이번주 매출</th>
+          <th class="num" style="width:16%;">WoW</th>
+          <th style="width:24%;">한 줄 해석</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="name">dept (백화점)</td><td class="num">5</td><td class="num">100,931,293</td><td class="num delta-down">-33.3%</td><td><span class="small">절대 매출 50%, WoW 평균치</span></td></tr>
+        <tr><td class="name">mall (몰)</td><td class="num">3</td><td class="num">48,525,963</td><td class="num delta-down">-33.6%</td><td><span class="small">여의도IFC가 끌어내림</span></td></tr>
+        <tr><td class="name">flagship</td><td class="num">1</td><td class="num">34,516,056</td><td class="num delta-down">-35.5%</td><td><span class="small">명동만 — 베이스 큼</span></td></tr>
+        <tr><td class="name">street</td><td class="num">1</td><td class="num">16,576,081</td><td class="num delta-down">-30.4%</td><td><span class="small">홍대 — 가장 작은 하락</span></td></tr>
+      </tbody>
+    </table>
+
+    <p class="interpretation">유형 간 격차 <strong>5%p 이내</strong> — 어버이날 반동이 매장 유형과 무관하게 균일하게 작용. 즉 매장별 차이는 <strong>유형이 아닌 개별 매장 응대·이벤트·트래픽 요인</strong>으로 해석.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>LUSH Korea · Internal</span>
+    <span class="num">02 / 06</span>
+  </div>
+</div>
+
+<!-- ============ PAGE 3: 채널 + 캠페인 + 요일 ============ -->
+<div class="page">
+  <div class="page-header">
+    <span class="brand">LUSH · Weekly Store Review</span>
+    <span>5/12 — 5/18 · 주간 매장 운영 리뷰</span>
+  </div>
+
+  <div class="page-content">
+    <div class="section-tag">Section 04 · Channel Context</div>
+    <h2 class="red-underline">채널별 <span style="font-weight:400; font-size:10pt; color:var(--muted);">· 매장 vs 온라인 채널의 어버이날 후폭풍</span></h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:28%;">채널</th>
+          <th class="num" style="width:18%;">이번주 (원)</th>
+          <th class="num" style="width:18%;">지난주 (원)</th>
+          <th class="num" style="width:12%;">WoW</th>
+          <th style="width:24%;">한 줄</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="name">자사몰 (lush.co.kr)</td><td class="num">69,694,769</td><td class="num">80,465,996</td><td class="num delta-down">-13.4%</td><td><span class="small">단골 베이스 — 가장 약한 하락</span></td></tr>
+        <tr><td class="name">카카오 선물하기</td><td class="num">63,203,114</td><td class="num">113,903,052</td><td class="num delta-down num-strong">-44.5%</td><td><span class="small">어버이날 핵심 — 직격</span></td></tr>
+        <tr><td class="name">네이버 브랜드스토어</td><td class="num">42,870,454</td><td class="num">46,239,328</td><td class="num delta-down">-7.3%</td><td><span class="small">검색 유입 안정</span></td></tr>
+        <tr><td class="name">올리브영 온라인</td><td class="num">30,806,676</td><td class="num">36,713,673</td><td class="num delta-down">-16.1%</td><td><span class="small">평균 수준 하락</span></td></tr>
+        <tr><td class="name">29CM</td><td class="num">16,440,222</td><td class="num">20,830,820</td><td class="num delta-down">-21.1%</td><td><span class="small">사쿠라 wrap-up 영향</span></td></tr>
+      </tbody>
+    </table>
+
+    <p class="interpretation"><strong>매장 -33% vs 카카오 -44.5%.</strong> 카카오 선물하기가 어버이날 직격이었고, 매장은 상대적으로 잘 버틴 편 — 매장의 5월 둘째주 가족 외출 트래픽이 카카오 이탈을 일부 흡수. 자사몰 -13.4%가 가장 약한 하락 → 단골 수요는 시즌 의존도가 낮다는 신호.</p>
+
+    <div class="section-tag" style="margin-top:6mm;">Section 05 · Campaign Wrap-up</div>
+    <h2 class="red-underline">캠페인 종료 효과 <span style="font-weight:400; font-size:10pt; color:var(--muted);">· 이번주 wrap-up 2건</span></h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:24%;">캠페인</th>
+          <th style="width:14%;">상태</th>
+          <th style="width:20%;">채널</th>
+          <th class="num" style="width:14%;">Spend</th>
+          <th class="num" style="width:14%;">Sales</th>
+          <th class="num" style="width:14%;">ROAS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="name">사쿠라 봄 한정</td><td>wrap-up</td><td>OWN · NAVER · 29CM</td><td class="num">3,533,120</td><td class="num">12,320,048</td><td class="num delta-up num-strong">3.49</td></tr>
+        <tr><td class="name">리프레시 5월 매장 이벤트</td><td>wrap-up</td><td>OFFLINE</td><td class="num">4,729,843</td><td class="num">8,445,920</td><td class="num">1.79</td></tr>
+      </tbody>
+    </table>
+
+    <p class="interpretation">사쿠라 봄(ROAS 3.49)은 양호하게 마무리. <strong>오프라인 리프레시 이벤트는 ROAS 1.79로 약함</strong> — 다음 어버이날 후속 매장 이벤트 설계 시 채널 믹스(매장 단독 OFFLINE → OWN·OFFLINE 하이브리드) 재검토 필요.</p>
+
+    <div class="section-tag" style="margin-top:6mm;">Section 06 · Daily Flow</div>
+    <h2 class="red-underline">요일별 흐름 <span style="font-weight:400; font-size:10pt; color:var(--muted);">· 토·일 집중 40.7%</span></h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:16%;">요일</th>
+          <th style="width:20%;">날짜</th>
+          <th class="num" style="width:24%;">매출(원)</th>
+          <th class="num" style="width:14%;">비중</th>
+          <th style="width:26%;">메모</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="name">화</td><td>5/12</td><td class="num">18,360,179</td><td class="num">9.2%</td><td><span class="small">주초 최저</span></td></tr>
+        <tr><td class="name">수</td><td>5/13</td><td class="num">21,244,605</td><td class="num">10.6%</td><td><span class="small">평일 평균</span></td></tr>
+        <tr><td class="name">목</td><td>5/14</td><td class="num">25,678,336</td><td class="num">12.8%</td><td><span class="small">주말 진입</span></td></tr>
+        <tr><td class="name">금</td><td>5/15</td><td class="num">31,777,039</td><td class="num">15.8%</td><td><span class="small">스승의날 효과 약함</span></td></tr>
+        <tr><td class="name">토</td><td>5/16</td><td class="num num-strong">41,422,335</td><td class="num num-strong">20.7%</td><td><span class="small">주 정점</span></td></tr>
+        <tr><td class="name">일</td><td>5/17</td><td class="num">40,315,061</td><td class="num">20.1%</td><td><span class="small">주말 가족 외출</span></td></tr>
+        <tr><td class="name">월</td><td>5/18</td><td class="num">21,751,838</td><td class="num">10.8%</td><td><span class="small">주마감</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-footer">
+    <span>LUSH Korea · Internal</span>
+    <span class="num">03 / 06</span>
+  </div>
+</div>
+
+<!-- ============ PAGE 4: 매장별 한 줄 코멘트 ============ -->
+<div class="page">
+  <div class="page-header">
+    <span class="brand">LUSH · Weekly Store Review</span>
+    <span>5/12 — 5/18 · 주간 매장 운영 리뷰</span>
+  </div>
+
+  <div class="page-content">
+    <div class="section-tag">Section 07 · Per-Store Notes</div>
+    <h2 class="red-underline">매장별 한 줄 코멘트 <span style="font-weight:400; font-size:10pt; color:var(--muted);">· 본부장님 매장 한 곳씩 짚어 물으실 때 답변용</span></h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:13%;">매장</th>
+          <th class="num" style="width:13%;">매출(원)</th>
+          <th class="num" style="width:8%;">WoW</th>
+          <th class="center" style="width:9%;">칭찬/불만</th>
+          <th style="width:57%;">한 줄 코멘트</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="name">명동본점</td>
+          <td class="num">34,516,056</td>
+          <td class="num delta-down">-35.5%</td>
+          <td class="center"><strong>8 / 0</strong></td>
+          <td>기프트 -6.3%로 반동 가장 적음. 외국인 트래픽 + 칭찬 8건 최다. 다음 주에도 <strong>1위 유지 가능</strong>.</td>
+        </tr>
+        <tr>
+          <td class="name">강남신세계</td>
+          <td class="num">29,597,773</td>
+          <td class="num delta-down">-30.8%</td>
+          <td class="center">1 / 1</td>
+          <td>평일 직장인 흐름 정상. 기프트 -26.3% — 백화점 어버이날 마케팅 종료의 직격.</td>
+        </tr>
+        <tr>
+          <td class="name">잠실롯데</td>
+          <td class="num">24,117,103</td>
+          <td class="num delta-down">-38.0%</td>
+          <td class="center">2 / 1</td>
+          <td><strong style="color:var(--alert-green);">기프트 +11.2% 유일 증가</strong> — 어머니날 다음 주말 가족 외출 흡수. 객단가 31,402원 매장 1위. 직원불친절 1건 SLA 위반(7.4h).</td>
+        </tr>
+        <tr>
+          <td class="name">현대판교</td>
+          <td class="num">23,342,900</td>
+          <td class="num delta-down">-30.1%</td>
+          <td class="center">5 / 2</td>
+          <td>칭찬 5건이지만 <strong style="color:var(--alert-red);">SLA 위반 4건 최다</strong> — 응대 품질 양극화 의심. 토·일 가족 트래픽으로 매출 방어. 전환율 22.5% 최고.</td>
+        </tr>
+        <tr>
+          <td class="name">스타필드하남</td>
+          <td class="num">22,219,603</td>
+          <td class="num delta-down">-28.0%</td>
+          <td class="center">2 / 2</td>
+          <td>토·일 가족 트래픽으로 매장 유형 중 가장 적게 하락. 직원불친절 1건 — 작년부터 반복 패턴.</td>
+        </tr>
+        <tr>
+          <td class="name">홍대</td>
+          <td class="num">16,576,081</td>
+          <td class="num delta-down">-30.4%</td>
+          <td class="center">4 / 0</td>
+          <td>street 유일 매장. 칭찬 4건 모두 제품만족 — 외국인·젊은층 베이스 안정. 트래픽은 높지만 전환율 14.2%로 낮음.</td>
+        </tr>
+        <tr>
+          <td class="name">코엑스</td>
+          <td class="num">14,461,264</td>
+          <td class="num delta-down">-34.1%</td>
+          <td class="center">4 / 2</td>
+          <td>기프트 <strong style="color:var(--alert-red);">반동 -40.3% 최악</strong> + 직원불친절 2건. 코엑스몰 평일 트래픽 + 응대 동시 점검 필요.</td>
+        </tr>
+        <tr>
+          <td class="name">신세계센텀</td>
+          <td class="num">14,359,931</td>
+          <td class="num delta-down">-32.3%</td>
+          <td class="center"><strong>0 / 0</strong></td>
+          <td><strong style="color:var(--alert-yellow);">VOC 라벨링 전무</strong> — 매니저 응대 기록 누락 의심. 다음 주 매니저 확인 필요.</td>
+        </tr>
+        <tr>
+          <td class="name">여의도IFC</td>
+          <td class="num">11,845,096</td>
+          <td class="num delta-down num-strong">-41.7%</td>
+          <td class="center">3 / 4</td>
+          <td>전체 <strong style="color:var(--alert-red);">최악 하락</strong> + 불만 4건(대기시간 3건) + SLA 미회신 1건. 평일 직장인 매출 -15% 추가.</td>
+        </tr>
+        <tr>
+          <td class="name">현대대구</td>
+          <td class="num">9,513,586</td>
+          <td class="num delta-down">-36.7%</td>
+          <td class="center">2 / 1</td>
+          <td>토요일(5/14) 매출 흐름 약함 — 매장 이벤트 미진행 추정. 직원불친절 1건.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="small" style="margin-top:3mm;"><strong>읽는 법.</strong> 매장명 옆 <span style="color:var(--alert-green); font-weight:700;">초록 강조</span>는 신호 있음, <span style="color:var(--alert-red); font-weight:700;">빨강 강조</span>는 즉각 점검 필요, <span style="color:var(--alert-yellow); font-weight:700;">노랑 강조</span>는 데이터 확인 필요.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>LUSH Korea · Internal</span>
+    <span class="num">04 / 06</span>
+  </div>
+</div>
+
+<!-- ============ PAGE 5: VOC 인용 + 본부장 예상 질문 ============ -->
+<div class="page">
+  <div class="page-header">
+    <span class="brand">LUSH · Weekly Store Review</span>
+    <span>5/12 — 5/18 · 주간 매장 운영 리뷰</span>
+  </div>
+
+  <div class="page-content">
+    <div class="section-tag">Section 08 · VOC Voices</div>
+    <h2 class="red-underline">VOC 직접 인용 <span style="font-weight:400; font-size:10pt; color:var(--muted);">· 최다·최저 매장 (응대 품질 시그널)</span></h2>
+
+    <div class="two-col">
+      <div class="voc-block">
+        <h4>칭찬 최다 — 명동본점 (8건) <span class="handwritten" style="font-size:13pt;">well done.</span></h4>
+        <div class="voc-row"><span class="date">5/15</span>[칭찬] 제품만족 — 더 익스피리먼터 배쓰밤</div>
+        <div class="voc-row"><span class="date">5/17</span>[칭찬] 제품만족 — 프로 컨디셔너 바 에이브리 후이</div>
+        <div class="voc-row"><span class="date">5/18</span>[칭찬] 직원응대 — 기프트 세트 핑크 클라우드</div>
+        <div class="voc-row"><span class="date">5/14</span>[칭찬] 직원응대 — 어머 사쿠라 배쓰밤</div>
+        <div class="voc-row" style="color:var(--body-soft); margin-top:2mm;">+ 4건 (제품만족 3건, 직원응대 1건)</div>
+      </div>
+      <div class="voc-block red">
+        <h4 style="color:var(--alert-red);">불만 최다 — 여의도IFC (4건, 대기시간 3건)</h4>
+        <div class="voc-row"><span class="date">5/13</span>[불만] 대기시간 (응대 1.7h / SLA 6h)</div>
+        <div class="voc-row"><span class="date">5/14</span>[불만] 대기시간 <strong style="color:var(--alert-red);">(status=미회신)</strong></div>
+        <div class="voc-row"><span class="date">5/15</span>[불만] 대기시간 (응대 4.1h / SLA 6h)</div>
+        <div class="voc-row"><span class="date">5/16</span>[불만] 대기시간 (응대 5.7h / SLA 임박)</div>
+        <div class="voc-row" style="color:var(--body); margin-top:2mm;"><strong>해석.</strong> 같은 매장에서 같은 유형(대기시간) 불만이 1주에 3건. SLA 안에 응대되지만 <strong>불만 발생 자체는 줄지 않음</strong> → 응대 인력·동선 점검 필요.</div>
+      </div>
+    </div>
+
+    <div class="section-tag" style="margin-top:6mm;">Section 09 · Director Q&amp;A</div>
+    <h2 class="red-underline">본부장님이 물어볼 질문 <span style="font-weight:400; font-size:10pt; color:var(--muted);">· 사전 대비 3개</span></h2>
+
+    <div class="qa">
+      <div class="q">Q1. "전체 -33% 하락은 어버이날 반동 맞아? 우리가 놓친 다른 요인은 없어?"</div>
+      <div class="a">어버이날 반동이 주된 동인 맞습니다. 근거 3가지:
+        <ul>
+          <li>카테고리 1위 기프트가 -59.9%로 가장 크게 빠짐</li>
+          <li>매장 유형(flagship·dept·street·mall) 격차 5%p 이내로 균일</li>
+          <li>카카오 선물하기(어버이날 핵심 채널) -44.5%가 매장보다 더 크게 하락</li>
+        </ul>
+        다만 여의도IFC만 -41.7%로 평균보다 8%p 더 빠짐 — <strong>응대 이슈 별건</strong>으로 분리.
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="q">Q2. "잠실은 왜 기프트만 잘 됐어?"</div>
+      <div class="a">어머니날 다음 주말(5/16-17) 잠실 일대 가족 외출 수요 흡수 추정. 잠실롯데 토·일 합산 9.6M(이번주 매출의 40%). 객단가도 <strong>31,402원으로 10개 매장 중 최고</strong> — 세트 기프트 추가 구매 가설. 다음 주(5/19-5/25) 기프트 매대 1주 연장 검토 필요(액션 A2).</div>
+    </div>
+
+    <div class="qa">
+      <div class="q">Q3. "다음 주는 어떻게 될까? 더 빠지는 거 아니야?"</div>
+      <div class="a">추정 — 다음 주는 <strong>-5~-10% 수준의 추가 약세 후 정상화</strong> 예상.
+        <ul>
+          <li>5월 둘째주가 어버이날 반동의 1차 충격</li>
+          <li>시즌 비의존 카테고리(샴푸바·비누)는 이미 어버이날 절정주보다 +1~3% — 베이스 수요 정상</li>
+          <li>사쿠라 봄 한정 캠페인 wrap-up(5/15) 영향 잔여</li>
+          <li><strong>변수</strong>: 5/24 부처님오신날 연휴 — 토·일 가족 트래픽 추가 유입 가능</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>LUSH Korea · Internal</span>
+    <span class="num">05 / 06</span>
+  </div>
+</div>
+
+<!-- ============ PAGE 6: 액션 아이템 3가지 ============ -->
+<div class="page">
+  <div class="page-header">
+    <span class="brand">LUSH · Weekly Store Review</span>
+    <span>5/12 — 5/18 · 주간 매장 운영 리뷰</span>
+  </div>
+
+  <div class="page-content">
+    <div class="section-tag">Section 10 · Action Items</div>
+    <h2 class="red-underline">액션 아이템 3가지 <span style="font-weight:400; font-size:10pt; color:var(--muted);">· 다음 주 의사결정 필요</span></h2>
+
+    <p class="lede" style="margin-bottom:5mm;">본부장님 미팅에서 <strong>GO/NO-GO 결정 요청</strong> 3건. 각 항목은 근거 → 조치 → 결정 사항 → 모니터링 지표 순서로 정리.</p>
+
+    <div class="callout">
+      <div class="callout-head">A1. 여의도IFC 평일 응대 인력 보강 <span style="color:var(--alert-red); float:right;">GO 결정 필요</span></div>
+      <div class="callout-body">
+        <strong>근거.</strong> 불만 4건 중 대기시간 3건 + 5/14 SLA 미회신 1건. 같은 매장 · 같은 유형 불만이 1주 내 반복.<br>
+        <strong>조치.</strong> 5/19~6/8 (3주) 평일 점심·저녁 피크(11-14시 · 18-20시) 응대 인력 +1명 임시 배치 + CE팀(Geo) 합동 매장 점검 1회.<br>
+        <div class="meta"><strong>결정 사항.</strong> 임시 인력 예산 (추정 약 80만원/주, 총 ~240만원). 본부장 승인 필요.<br>
+        <strong>모니터링.</strong> 다음 주(5/19-5/25) VOC 대기시간 불만 건수 → <strong>2건 이하면 효과 확인</strong>.</div>
+      </div>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-head">A2. 잠실롯데 기프트 매대 1주 연장 + 잔여 재고 재배분 <span style="color:var(--alert-green); float:right;">재고 재배분 GO</span></div>
+      <div class="callout-body">
+        <strong>근거.</strong> 10개 매장 중 유일하게 <strong>기프트 +11.2%</strong> (어버이날 절정주 대비). 객단가 31,402원으로 매장 1위.<br>
+        <strong>조치.</strong> 어머니날 한정 GS003(어머니날 한정 기프트 세트) 잔여 재고를 잠실로 재배분 + 매대 5/19~5/25 1주 연장.<br>
+        <div class="meta"><strong>결정 사항.</strong> 물류 추가 비용 미미. 다른 매장 SKU 차출 시 손실 확인 필요.<br>
+        <strong>모니터링.</strong> 다음 주 잠실 기프트 매출 → 이번 주(6.5M) <strong>유지·증가 시 추가 1주 연장</strong>.</div>
+      </div>
+    </div>
+
+    <div class="callout yellow">
+      <div class="callout-head">A3. 현대판교 응대 품질 진단 <span style="color:var(--alert-yellow); float:right;">CE팀 진단 GO</span></div>
+      <div class="callout-body">
+        <strong>근거.</strong> SLA 위반 4건은 10개 매장 중 최다(다음 매장은 2건). 불만 2건(직원불친절·대기시간) 동시 발생. <strong>다만 칭찬도 5건</strong> — 응대 품질 양극화 의심.<br>
+        <strong>조치.</strong> 5/21~5/27 매니저 1:1 코칭 1회 + 미스터리쇼퍼 1회 + 다음 주간 보고에 응대 KPI 별도 추적 컬럼 추가.<br>
+        <div class="meta"><strong>결정 사항.</strong> CE팀(Geo) 일정 합의. 미스터리쇼퍼 외부 발주 시 추정 30만원.<br>
+        <strong>모니터링.</strong> 다음 주 SLA 위반 건수 → <strong>2건 이하면 정상화 진행</strong>.</div>
+      </div>
+    </div>
+
+    <p class="small" style="margin-top:4mm;"><strong>참고 — 신세계센텀(VOC 0/0)은 액션 아이템에 포함하지 않음.</strong> 데이터 누락 확인이 먼저 — 매니저에게 VOC 라벨링 절차 재공유 후 다음 주 보고에서 정상화 여부 확인. 진짜 응대 이슈가 아닌 기록 누락 가능성이 높아 별건 처리.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>LUSH Korea · Internal</span>
+    <span class="num">06 / 06</span>
+  </div>
+</div>
+
+<!-- ============ CLOSING ============ -->
+<div class="cover">
+  <div class="cover-brand">
+    <div class="cover-logo">LUSH</div>
+    <div class="cover-meta">Korea · Retail HQ</div>
+  </div>
+
+  <div class="closing-body">
+    <div class="closing-handwritten">Next week, fresh.</div>
+    <div class="closing-line"></div>
+    <div class="closing-title">다음 주 보고에서 만나요.</div>
+    <p class="closing-sub">
+      어버이날 시즌은 끝났지만, 5월 가족 외출 시즌은 이어집니다.<br>
+      잠실 시그널 · 여의도 회복 · 판교 진단 — 다음 주 데이터로 검증합니다.
+    </p>
+  </div>
+
+  <div class="cover-foot">
+    <div>
+      <div class="author">조현숙 (Curls) · 리테일본부</div>
+      <div class="role">다음 주간 리뷰: 2026.05.25 (월) 11:00</div>
+    </div>
+    <div class="right">
+      <div class="author">LUSH Korea</div>
+      <div class="role">Fresh handmade cosmetics</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

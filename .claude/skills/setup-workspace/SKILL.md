@@ -47,6 +47,9 @@ test -d 40-personal/46-todos    || missing+=("40-personal/46-todos/")
 # Todo 시드 (todo/todos 스킬 타깃)
 test -f 40-personal/46-todos/active-todos.md || missing+=("40-personal/46-todos/active-todos.md")
 
+# raw 인박스 (kakao-read 수집 → inbox-triage 분류 경로)
+test -d 00-inbox/raw || missing+=("00-inbox/raw/")
+
 # Wiki 시드 (wiki-ingest, wiki-lint가 읽고 씀)
 test -f 30-knowledge/00-wiki/SCHEMA.md || missing+=("30-knowledge/00-wiki/SCHEMA.md")
 test -f 30-knowledge/00-wiki/index.md  || missing+=("30-knowledge/00-wiki/index.md")
@@ -159,6 +162,12 @@ No면 "나중에 필요할 때 다시 이 스킬을 호출하거나 직접 `pip 
 echo "=== 선택 도구 상태 ==="
 command -v git &>/dev/null && echo "✓ git: $(git --version)" || echo "✗ git: 미설치 (daily-review, weekly-synthesis 동작 제한)"
 command -v gws &>/dev/null && echo "✓ gws: $(gws --version 2>&1 | head -1)" || echo "✗ gws: 미설치 (daily-note의 Google Calendar 연동 스킵)"
+if [ "$(uname)" = "Darwin" ]; then
+  command -v sqlcipher &>/dev/null && echo "✓ sqlcipher: $(sqlcipher --version 2>&1 | head -1)" \
+    || echo "✗ sqlcipher: 미설치 (kakao-read 카톡 읽기 비활성 — brew install sqlcipher)"
+else
+  echo "ℹ️  kakao-read: macOS 전용 — 현재 OS($(uname))에선 비활성 (다른 스킬엔 영향 없음)"
+fi
 ```
 
 출력 후 설명:
@@ -171,6 +180,12 @@ command -v gws &>/dev/null && echo "✓ gws: $(gws --version 2>&1 | head -1)" ||
   - 설치: `npm install -g gws-cli` (교육 과정에서 별도 안내)
   - 인증: `gws auth login` (브라우저 OAuth)
   - 없어도 daily-note는 정상 동작하며 일정 섹션만 비어있음
+
+**sqlcipher (macOS 전용)**: kakao-read가 Mac 카카오톡 로컬 DB를 읽습니다.
+  - 설치: `brew install sqlcipher`
+  - 최초 1회: `python3 .claude/skills/kakao-read/scripts/kakao_read.py setup` (본인 userId 캐시)
+  - 카카오톡 데스크톱 앱에 한 번 이상 로그인돼 있어야 함
+  - macOS 전용 — Windows/Linux에선 자동 비활성, 다른 스킬엔 영향 없음
 ```
 
 설치까지 자동으로 하지 않음. 사용자가 필요성 판단 후 진행.

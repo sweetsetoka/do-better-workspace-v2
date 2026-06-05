@@ -1,7 +1,7 @@
 # CLAUDE.md - Source of Truth
 
 > **Source**: [code.claude.com/docs/en/memory](https://code.claude.com/docs/en/memory)
-> **Updated**: 2026-04-24 (v2.1.119) - CLAUDE.md/Memory 시스템 자체 변경 없음, 버전만 동기화
+> **Updated**: 2026-06-05 (v2.1.165) - requiredMinimumVersion 관리 설정, Opus 4.8/lean 프롬프트, GFM 체크박스 반영
 > **Purpose**: CLAUDE.md 작성 시 유일한 참조 문서
 
 ---
@@ -37,6 +37,21 @@ Claude Code는 다음 순서로 메모리를 로드 (모두 병합됨):
 | Windows | `C:\Program Files\ClaudeCode\CLAUDE.md` |
 
 MDM, Group Policy, Ansible 등으로 배포.
+
+### 버전 강제 managed settings (v2.1.163)
+
+```json
+{
+  "requiredMinimumVersion": "2.1.150",
+  "requiredMaximumVersion": "2.1.165"
+}
+```
+
+**(v2.1.163)** Claude Code 버전이 허용 범위를 벗어나면 시작을 거부하고 승인된 버전으로 안내. 조직이 사용 버전을 통제할 때 사용.
+
+### `allowAllClaudeAiMcps` managed setting (v2.1.149)
+
+**(v2.1.149)** 엔터프라이즈용. `managed-mcp.json`과 함께 claude.ai 클라우드 MCP 커넥터를 로드.
 
 ---
 
@@ -194,6 +209,34 @@ CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1 claude --add-dir ../shared-config
 
 **원칙**: 지침은 CLAUDE.md, 설정은 settings.json
 
+### `/config` 영구 저장 (v2.1.119)
+
+`/config`로 변경한 설정이 `~/.claude/settings.json`에 영구 저장됨. 우선순위는 project > local > policy 순으로 override. 이전에는 세션 한정이었으나 이제 재시작 후에도 유지.
+
+### `claude project purge` (v2.1.126)
+
+```bash
+claude project purge [path]
+```
+
+해당 프로젝트의 모든 Claude Code state(세션, auto memory, 캐시)를 삭제. 프로젝트 정리 또는 fresh start에 유용.
+
+### `CLAUDE_CODE_HIDE_CWD` (v2.1.119)
+
+```bash
+export CLAUDE_CODE_HIDE_CWD=1
+```
+
+시작 로고에서 작업 디렉토리를 숨김. 데모/녹화 시 경로 노출 방지.
+
+### Prompt Cache TTL 제어 (v2.1.108~2.1.129)
+
+- `ENABLE_PROMPT_CACHING_1H=1` (v2.1.108): API key/Bedrock/Vertex/Foundry에서 1시간 prompt cache TTL 활성화 (기존 `ENABLE_PROMPT_CACHING_1H_BEDROCK` deprecated)
+- `FORCE_PROMPT_CACHING_5M=1`: 5분 TTL 강제
+- `DISABLE_PROMPT_CACHING*` 설정 시 시작 경고 (v2.1.108)
+- **(v2.1.129 수정)** 1시간 prompt cache TTL이 5분으로 다운그레이드되던 버그 수정
+- **(v2.1.132 수정)** Bedrock/Vertex 400 errors with `ENABLE_PROMPT_CACHING_1H` 수정
+
 ---
 
 ## 9. 작성 팁
@@ -221,6 +264,13 @@ CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1 claude --add-dir ../shared-config
 3. CLAUDE.local.md는 .gitignore에 추가
 4. 정기적으로 프로젝트 변화에 맞춰 갱신
 
+### 시스템 프롬프트 / 모델 기본값 (v2.1.154)
+
+- **(v2.1.154)** Opus 4.8 출시. 기본 high effort, 가장 어려운 작업은 `/effort xhigh`
+- **(v2.1.154)** **lean 시스템 프롬프트**가 Haiku/Sonnet/Opus 4.7 이전 모델을 제외한 모든 모델에서 기본값. 시스템 컨텍스트가 가벼워져 CLAUDE.md 등 사용자 지침의 상대 비중이 커짐
+- **(v2.1.154)** Claude가 스스로 판단 가능한 경우 multiple-choice 질문을 자제하고 바로 진행 — 충분한 컨텍스트가 있으면 묻지 않음
+- **(v2.1.149)** 마크다운 출력이 GFM task list 체크박스(`- [ ] todo` / `- [x] done`)를 일반 불릿이 아닌 체크박스로 렌더링. CLAUDE.md/메모리의 체크리스트 표시에 영향
+
 ### 알려진 수정
 
 - **(v2.1.101)** 인식되지 않는 hook 이벤트 이름에 대한 settings 내구성 개선 (설정 파일에 미래 hook 이벤트가 있어도 크래시하지 않음)
@@ -246,6 +296,35 @@ CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1 claude --add-dir ../shared-config
 
 ## Update History
 
+- **2026-06-05**: v2.1.143~2.1.165 변경사항 반영
+  - **버전 강제 managed settings (v2.1.163)**: `requiredMinimumVersion`/`requiredMaximumVersion`으로 허용 범위 밖 버전 시작 거부
+  - **`allowAllClaudeAiMcps` managed setting (v2.1.149)**: claude.ai 클라우드 MCP 커넥터 로드
+  - **Opus 4.8 출시 + lean 시스템 프롬프트 기본화 (v2.1.154)**: 대부분 모델에서 lean 프롬프트가 기본 — 사용자 지침 상대 비중 증가
+  - **불필요한 multiple-choice 질문 자제 (v2.1.154)**: 충분한 컨텍스트 시 바로 진행
+  - **GFM task list 체크박스 렌더링 (v2.1.149)**: `- [ ]`/`- [x]`를 체크박스로 표시
+  - **`/usage` 카테고리별 분해 (v2.1.149)**: skills/subagents/plugins/MCP별 limits 사용량 표시
+  - `NO_COLOR`/`FORCE_COLOR`가 settings.json `env`에서 Claude Code 자체 UI 색상을 벗기던 버그 수정 — 이제 서브프로세스에만 적용 (v2.1.143)
+- **2026-05-15**: v2.1.133~2.1.142 변경사항 반영
+  - **`/goal` 명령 (v2.1.139)**: 여러 turn에 걸쳐 유지되는 완료 조건(goal) 정의. Claude가 매 응답마다 goal 충족 여부 자가 점검
+  - **`/scroll-speed` 명령 (v2.1.139)**: 트랜스크립트 스크롤 속도 사용자 설정
+  - **Transcript view 네비게이션 (v2.1.139)**: `?`로 단축키, `{`/`}`로 prompt 간 이동
+  - **Rewind "Summarize up to here" (v2.1.141)**: 특정 지점까지의 컨텍스트를 요약본으로 대체 — 컨텍스트 압축의 새 옵션
+  - **`/feedback`이 최근 세션 첨부 (v2.1.141)**: 피드백 제출 시 최근 세션 컨텍스트 동봉 가능
+  - **Compaction prompt 민감 instruction 보존 (v2.1.139)**: 압축 후에도 CLAUDE.md의 민감 instruction 유지
+  - **MCP 서버가 `CLAUDE_PROJECT_DIR` 받음 (v2.1.139)**: 프로젝트 경로를 환경변수로 직접 인식 — CLAUDE.md 기반 프로젝트 인식과 시너지
+  - **`CLAUDE_CODE_SESSION_ID`/`CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`는 기존 노출 유지 (v2.1.132)**
+- **2026-05-07**: v2.1.115~2.1.132 변경사항 반영
+  - **`/config` 영구 저장 (v2.1.119)**: 설정이 `~/.claude/settings.json`에 영구 저장. project/local/policy override 정밀화
+  - **`claude project purge [path]` (v2.1.126)**: 프로젝트의 모든 Claude Code state 삭제
+  - **`CLAUDE_CODE_HIDE_CWD` 환경변수 (v2.1.119)**: 시작 로고에서 작업 디렉토리 숨김
+  - **`DISABLE_UPDATES` 환경변수 (v2.1.118)**: 모든 업데이트 경로 차단(`claude update` 포함)
+  - **`CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1` (v2.1.132)**: 풀스크린 렌더링 opt-out
+  - **`CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE` (v2.1.129)**: 백그라운드 자동 업그레이드 제어
+  - Prompt cache 1h TTL 5m으로 다운그레이드 버그 수정 (v2.1.129) 및 Bedrock/Vertex 400 errors 수정 (v2.1.132)
+  - 멀티라인 paste의 newline 손실/CRLF 빈 줄 추가 버그 수정 (v2.1.119)
+  - `/clear`가 터미널 탭 타이틀 reset 안 하던 버그 수정 (v2.1.129)
+  - `verbose` 설정이 재시작 후 persist 안 하던 버그 수정 (v2.1.119)
+  - 컨텍스트 percent inflation 및 premature autocompaction (Opus 4.7) 수정 (v2.1.117)
 - **2026-04-19**: v2.1.110~2.1.114 — CLAUDE.md/Memory 시스템 자체 변경 없음, 버전만 동기화
   - 관련 환경 변경: `Ctrl+A`/`Ctrl+E` readline 기본 동작 복원 (v2.1.113), `Ctrl+U` 입력 버퍼 전체 삭제 (v2.1.111, `Ctrl+Y`로 복원), `Ctrl+L` 전체 화면 redraw (v2.1.111)
   - Auto mode가 Max 구독자에게 Opus 4.7 사용 시 기본 제공 (v2.1.111) — `--enable-auto-mode` 플래그 불필요

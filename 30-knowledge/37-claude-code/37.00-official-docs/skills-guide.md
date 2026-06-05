@@ -1,7 +1,7 @@
 # Claude Code Skills - Source of Truth
 
 > **Source**: [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills), [platform.claude.com Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
-> **Updated**: 2026-04-24 (v2.1.119) - auto-compaction 재실행 fix, `/skills` 엔터 동작 fix
+> **Updated**: 2026-06-05 (v2.1.165)
 > **Purpose**: Skills 개발 시 유일한 참조 문서. 이 파일이 source of truth.
 
 ---
@@ -23,6 +23,14 @@
 - 기존 `.claude/commands/` 파일은 계속 작동
 - **같은 이름일 경우 Skill이 우선**
 - Skills가 상위 호환: 지원 파일 디렉토리, frontmatter 호출 제어, 자동 로드
+
+### `disallowed-tools` frontmatter (v2.1.152)
+
+**(v2.1.152)** Skills와 슬래시 커맨드 frontmatter에 `disallowed-tools` 필드를 설정하여 스킬 활성 중 특정 도구를 모델에서 제거 가능. `allowed-tools`의 반대 — 대부분 허용하되 일부만 차단할 때 유용.
+
+### `/reload-skills` 커맨드 (v2.1.152)
+
+**(v2.1.152)** `/reload-skills` 커맨드로 세션 재시작 없이 스킬 디렉토리를 재스캔. SessionStart 훅이 `reloadSkills: true`를 반환하면 훅이 설치한 스킬을 같은 세션에서 즉시 사용 가능. (이전 `/reload-plugins`의 스킬 버전)
 
 ---
 
@@ -46,7 +54,7 @@ my-skill/
 | Enterprise | 관리 설정 참조 | 조직의 모든 사용자 |
 | Personal | `~/.claude/skills/<name>/SKILL.md` | 모든 프로젝트 |
 | Project | `.claude/skills/<name>/SKILL.md` | 해당 프로젝트만 |
-| Plugin | `<plugin>/skills/<name>/SKILL.md` | 플러그인 활성화된 곳 |
+| Plugin | `<plugin>/skills/<name>/SKILL.md` 또는 `<plugin>/SKILL.md` (v2.1.142+) | 플러그인 활성화된 곳 |
 
 **우선순위**: enterprise > personal > project
 동일 이름 시 높은 우선순위가 승리. Plugin은 `plugin-name:skill-name` 네임스페이스로 충돌 없음.
@@ -56,6 +64,8 @@ my-skill/
 - 중첩 디렉토리: `packages/frontend/` 편집 시 `packages/frontend/.claude/skills/`도 탐색 (모노레포 지원)
 - `--add-dir`로 추가된 디렉토리의 `.claude/skills/`도 자동 로드
 - 라이브 변경 감지: 세션 재시작 없이 SKILL.md 편집 즉시 반영
+- **(v2.1.157)** `.claude/skills` 디렉토리에 둔 플러그인은 마켓플레이스 없이 자동 로드됨 (스킬 디렉토리가 곧 플러그인 배포 경로 역할)
+- **(v2.1.144)** 스킬 디렉토리 내에서 빌드가 돌아도 비(非)`.md` 파일은 스킬 리로드를 트리거하지 않음 (file descriptor 고갈 방지)
 
 ---
 
@@ -91,6 +101,7 @@ hooks:
 | `disable-model-invocation` | - | `false` | `true`: Claude 자동 실행 차단. `/name`으로만 호출 가능. |
 | `user-invocable` | - | `true` | `false`: `/` 메뉴에서 숨김. Claude는 여전히 자동 호출 가능. 배경 지식 스킬용. |
 | `allowed-tools` | - | 전체 | 스킬 활성 시 권한 요청 없이 사용 가능한 툴들. 쉼표 구분. |
+| `disallowed-tools` | - | 없음 | **(v2.1.152)** 스킬 활성 중 모델에서 제거할 도구들. `allowed-tools`의 반대(denylist). |
 | `model` | - | 상속 | 스킬 활성 시 사용할 모델. `sonnet`, `opus`, `haiku` |
 | `context` | - | 인라인 | `fork`: 분기된 서브에이전트 컨텍스트에서 실행 |
 | `agent` | - | `general-purpose` | `context: fork` 시 사용할 에이전트. 내장: `Explore`, `Plan`, `general-purpose`. 커스텀: `.claude/agents/`의 에이전트. |
@@ -158,6 +169,8 @@ Skills는 토큰 효율을 위해 3단계로 로딩됨.
 - **(v2.1.86)** `/skills` 메뉴가 **알파벳 순 정렬**로 변경
 - **(v2.1.111)** `/skills` 메뉴에 **추정 토큰 수 정렬** 옵션 추가 — `t` 키로 토글
 - **(v2.1.111)** `/less-permission-prompts` 빌트인 스킬 추가 — 트랜스크립트를 스캔하여 자주 쓰는 read-only Bash/MCP 호출을 우선순위 정렬된 allowlist로 `.claude/settings.json`에 제안
+- **(v2.1.121)** `/skills`에 **type-to-filter 검색 박스** 추가 — 입력만으로 스킬 즉시 필터링
+- **(v2.1.129)** `skillOverrides` 설정이 **여러 옵션과 함께 사용 가능** — 한 스킬에 대해 여러 override를 동시 적용
 
 ---
 
@@ -170,8 +183,10 @@ SKILL.md 콘텐츠 내에서 사용 가능한 변수들.
 | `$ARGUMENTS` | 스킬 호출 시 전달된 모든 인자. 콘텐츠에 없으면 `ARGUMENTS: <value>`로 끝에 자동 추가. |
 | `$ARGUMENTS[N]` | 0-based 인덱스로 특정 인자 접근. 예: `$ARGUMENTS[0]` = 첫 번째 인자 |
 | `$N` | `$ARGUMENTS[N]`의 단축형. `$0` = 첫 번째, `$1` = 두 번째 |
-| `${CLAUDE_SESSION_ID}` | 현재 세션 ID. 로깅, 세션별 파일 생성에 유용. |
+| `\$` | **(v2.1.163)** 커맨드 본문에서 숫자 앞에 리터럴 `$`를 넣을 때 사용하는 escape 문법. 예: `\$1`은 변수 치환 없이 `$1` 문자 그대로 출력. |
+| `${CLAUDE_SESSION_ID}` | 현재 세션 ID. 로깅, 세션별 파일 생성에 유용. **(v2.1.132)** Bash 도구 서브프로세스에 `CLAUDE_CODE_SESSION_ID` 환경변수로도 노출. |
 | `${CLAUDE_SKILL_DIR}` | **(v2.1.69)** 현재 스킬의 디렉토리 경로. SKILL.md에서 자신의 파일 참조에 유용. |
+| `${CLAUDE_EFFORT}` | **(v2.1.120)** 현재 effort level (`low`/`medium`/`high`/`xhigh`/`max`). 스킬이 effort에 따라 동작 분기 가능. |
 
 ### 사용 예시
 
@@ -294,6 +309,8 @@ hooks:
 | TaskCreated | **(v2.1.84)** `TaskCreate`로 태스크 생성 시 발생 |
 | CwdChanged | **(v2.1.83)** 작업 디렉토리 변경 시 (예: direnv) |
 | FileChanged | **(v2.1.83)** 파일 변경 감지 시 |
+| MessageDisplay | **(v2.1.152)** 어시스턴트 메시지 텍스트가 표시될 때. 훅이 텍스트를 변형하거나 숨길 수 있음 |
+| SessionStart | **(v2.1.152)** 세션 시작/재개 시. `reloadSkills: true`로 스킬 재스캔, `hookSpecificOutput.sessionTitle`로 세션 제목 설정 가능 |
 
 **옵션**:
 - `matcher`: 특정 도구 이름과 매칭 (예: `"Bash"`, `"*"`)
@@ -545,6 +562,11 @@ Recent changes:
 4. description을 더 구체적으로 수정
 5. **(v2.1.69)** description에 콜론(`:`)이 있으면 YAML 파싱 실패할 수 있었음 - 수정됨
 6. **(v2.1.69)** `description:` 없는 프로젝트 스킬이 목록에 안 나오던 버그 - 수정됨
+7. **(v2.1.119)** `/skills`에서 Enter 키가 다이얼로그를 닫기만 하고 `/<skill-name>`을 prompt에 pre-fill하지 않던 버그 수정
+8. **(v2.1.119)** pre-compaction 중 호출된 스킬이 다음 prompt에 다시 실행되던 버그 수정
+9. **(v2.1.128)** `/fast` 등 짧은 슬래시 커맨드가 무관한 스킬에 fuzzy-match로 잘못 매칭되던 버그 수정
+10. **(v2.1.145)** `context: fork` 스킬이 실행 대신 자기 자신을 무한 재호출하던 버그 수정
+11. **(v2.1.144)** Skill 도구가 headless(`-p`) 모드에서 권한 에러로 실패하던 회귀 버그 수정 (v2.1.141 이후)
 
 ### 스킬이 너무 자주 트리거됨
 
@@ -642,6 +664,30 @@ allowed-tools: [최소 필요 도구]
 
 ## Update History
 
+- **2026-06-05**: v2.1.143~2.1.165 변경사항 반영
+  - **`disallowed-tools` frontmatter (v2.1.152)**: 스킬/슬래시 커맨드 활성 중 특정 도구를 모델에서 제거 (allowed-tools의 denylist 반대)
+  - **`/reload-skills` 커맨드 (v2.1.152)**: 세션 재시작 없이 스킬 디렉토리 재스캔. SessionStart 훅 `reloadSkills: true`로 훅이 설치한 스킬 즉시 사용
+  - **`MessageDisplay` 훅 이벤트 (v2.1.152)**: 어시스턴트 메시지 텍스트를 표시 시점에 변형/숨김
+  - **`SessionStart` 훅 sessionTitle (v2.1.152)**: 시작/재개 시 세션 제목 설정
+  - **`\$` escape 문법 (v2.1.163)**: 커맨드 본문에서 숫자 앞 리터럴 `$` 표기
+  - **`.claude/skills` 플러그인 자동 로드 (v2.1.157)**: 마켓플레이스 없이 스킬 디렉토리의 플러그인 로드
+  - **비-`.md` 파일 스킬 리로드 미트리거 (v2.1.144)**: 스킬 디렉토리 내 빌드가 FD 고갈 일으키던 버그 수정
+  - `context: fork` 무한 자기 재호출 버그 수정 (v2.1.145)
+  - Skill 도구 headless 모드 권한 에러 회귀 수정 (v2.1.144)
+- **2026-05-15**: v2.1.133~2.1.142 변경사항 반영
+  - **Root-level `SKILL.md` plugin (v2.1.142)**: 플러그인의 루트에 위치한 `SKILL.md`도 스킬로 자동 surfacing. 단일 스킬 전용 플러그인을 별도 `skills/` 디렉토리 없이 배포 가능
+  - **`/insights` 크래시 수정 (v2.1.135)**: malformed tool calls 처리 시 크래시 수정 — 스킬 실행 결과 surfacing 안정화
+  - **Compaction prompt sensitive instructions 보존 (v2.1.139)**: 스킬에 포함된 민감 instruction이 compaction 후에도 유지
+- **2026-05-07**: v2.1.115~2.1.132 변경사항 반영
+  - **`${CLAUDE_EFFORT}` 변수 추가 (v2.1.120)**: 스킬 콘텐츠에서 현재 effort level 참조 가능. 동일 스킬을 effort에 따라 다르게 동작시킬 수 있음
+  - **`CLAUDE_CODE_SESSION_ID` 환경변수 (v2.1.132)**: Bash 도구 서브프로세스에 세션 ID가 환경변수로 노출 — 스킬 내부 스크립트에서 세션 추적 가능
+  - **`/skills` type-to-filter 검색 박스 (v2.1.121)**: 메뉴에서 입력만으로 즉시 필터링
+  - **`skillOverrides` multi-option (v2.1.129)**: 여러 옵션 동시 적용 지원
+  - 스킬이 pre-compaction 중 호출 후 다음 prompt에 재실행되던 버그 수정 (v2.1.119)
+  - `/skills` Enter 키가 `/<skill-name>` pre-fill 안 하던 버그 수정 (v2.1.119)
+  - `/fast` fuzzy-matching이 무관한 스킬에 매칭되던 버그 수정 (v2.1.128)
+  - 슬래시 커맨드 자동완성 popup이 3-5개로 cap 되던 버그 수정 (v2.1.132)
+  - `/skills` 메뉴 description 잘림 버그 fix 및 시작 경고 개선 (v2.1.131~2.1.132)
 - **2026-04-19**: v2.1.110~2.1.114 변경사항 반영
   - `/less-permission-prompts` 빌트인 스킬 추가 (v2.1.111) — 트랜스크립트 스캔 후 read-only Bash/MCP 호출을 prioritized allowlist로 제안
   - `/skills` 메뉴 토큰 수 정렬 옵션 추가 (v2.1.111) — `t` 키로 토글

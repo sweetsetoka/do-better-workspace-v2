@@ -1,7 +1,7 @@
 # Claude Code Plugins - Source of Truth
 
 > **Source**: claude-plugins-official marketplace (plugin-dev, plugins-reference), 실제 설치/운용 경험
-> **Updated**: 2026-04-24 (v2.1.119) - `claude plugin tag`, auto-update 동작, `/doctor` 진단 반영
+> **Updated**: 2026-06-05 (v2.1.165)
 > **Purpose**: Plugin 개발/설치/관리 시 유일한 참조 문서. 이 파일이 source of truth.
 
 ---
@@ -72,12 +72,14 @@ my-plugin/
 | 컴포넌트 | 위치 | 발견 시점 |
 |----------|------|----------|
 | Commands | `commands/*.md` | Plugin 로드 시 자동 등록 |
-| Skills | `skills/*/SKILL.md` | Plugin 로드 시 자동 로드 |
+| Skills | `skills/*/SKILL.md` 또는 **루트 `SKILL.md` (v2.1.142+)** | Plugin 로드 시 자동 로드 |
 | Agents | `agents/*.md` | Plugin 로드 시 자동 등록 |
 | Hooks | `hooks/hooks.json` | Plugin 로드 시 자동 적용 |
 | MCP | `servers/.mcp.json` | Plugin 로드 시 자동 연결 |
 
-수동 등록 불필요. 정해진 디렉토리에 파일을 배치하면 Claude Code가 자동 인식한다.
+수동 등록 불필요. 정해진 디렉토리에 파일을 배치하면 Claude Code가 자동 인식한다. **v2.1.142부터** plugin의 루트 디렉토리에 `SKILL.md`만 두어도 스킬로 surfacing — 단일 스킬 전용 플러그인은 `skills/<name>/` 구조 없이 배포 가능.
+
+**(v2.1.157)** `.claude/skills` 디렉토리에 있는 플러그인은 **마켓플레이스 없이 자동 로드**됨. `claude plugin init <name>`으로 `.claude/skills`에 새 플러그인 스캐폴드를 생성 가능.
 
 ---
 
@@ -193,9 +195,15 @@ commands/
 # 설치된 Plugin 목록
 /plugin list
 
+# 활성/비활성 필터 (v2.1.163)
+/plugin list --enabled
+/plugin list --disabled
+
 # Plugin 상세 정보
 /plugin info <plugin-name>
 ```
+
+**(v2.1.163)** `/plugin list` 커맨드 추가 (`--enabled`/`--disabled` 필터). **(v2.1.157)** `/plugin` 인자 자동완성 추가: 서브커맨드, 설치된 플러그인 이름, 알려진 마켓플레이스의 플러그인.
 
 ### 활성화/비활성화
 
@@ -217,18 +225,71 @@ commands/
 /reload-plugins
 ```
 
-**동작 노트 (v2.1.119)**: 다른 플러그인의 의존성 version constraint로 pinned된 플러그인은 constraint를 만족하는 최고 git tag로 자동 업데이트된다. 제약 때문에 auto-update가 스킵되면 `/doctor`와 `/plugin` Errors 탭에 표시된다 (v2.1.118).
-
-### 플러그인 릴리스 태깅 (v2.1.118 신규)
-
-플러그인 개발자가 릴리스 git tag를 생성할 때 사용. 버전 유효성 검증 포함:
+### `claude plugin init` (v2.1.157)
 
 ```bash
-# 플러그인 루트에서 실행 — plugin.json의 version을 읽어 git tag 생성
+claude plugin init <name>   # .claude/skills에 새 플러그인 스캐폴드 생성
+```
+
+### `defaultEnabled: false` (v2.1.154)
+
+```json
+{
+  "name": "my-plugin",
+  "defaultEnabled": false
+}
+```
+
+**(v2.1.154)** `plugin.json` 또는 마켓플레이스 항목에서 `defaultEnabled: false` 선언 가능. `/plugin` 또는 `claude plugin enable`로 활성화. 활성화된 플러그인의 dependency는 여전히 자동 활성화됨.
+
+### `--scope` for marketplace remove (v2.1.153)
+
+```bash
+claude plugin marketplace remove <name> --scope user|project|local
+```
+
+**(v2.1.153)** `marketplace remove`가 `--scope`를 받도록 확장 (`marketplace add`, `install`, `uninstall`과 대칭).
+
+### `skipLfs` 마켓플레이스 소스 옵션 (v2.1.153)
+
+**(v2.1.153)** `github`/`git` 플러그인 마켓플레이스 소스에 `skipLfs` 옵션 추가 — clone/update 시 Git LFS 다운로드 건너뜀.
+
+### Context-aware 플러그인 추천 (v2.1.154, v2.1.152)
+
+- **(v2.1.154)** `/plugin` Discover 탭이 현재 디렉토리의 relevance 신호와 일치하는 플러그인을 "suggested for this directory" 어노테이션으로 핀 고정
+- **(v2.1.152)** `pluginSuggestionMarketplaces` managed setting: 관리자가 context-aware tip으로 추천 가능한 조직 마켓플레이스를 allowlist
+
+### `--plugin-url` Direct Install (v2.1.129)
+
+```bash
+claude --plugin-url https://example.com/my-plugin.zip
+```
+
+마켓플레이스 등록 없이 `.zip` archive URL 직접 설치. 내부 배포/테스트 시 유용.
+
+### `--plugin-dir` Zip Archive (v2.1.128)
+
+```bash
+claude --plugin-dir /path/to/my-plugin.zip
+```
+
+`--plugin-dir`이 디렉토리뿐 아니라 `.zip` 파일도 받도록 확장.
+
+### `claude plugin prune` (v2.1.121)
+
+```bash
+claude plugin prune
+```
+
+다른 plugin의 dependency였으나 더 이상 참조되지 않는 orphaned plugins 제거.
+
+### `claude plugin tag` (v2.1.118)
+
+```bash
 claude plugin tag
 ```
 
-`plugin.json`의 `version` 필드(semver)와 git tag를 동기화하여, 다른 플러그인이 version constraint로 이 플러그인을 참조할 때 올바른 태그가 해석되도록 한다.
+릴리스 git tag 생성 + version 검증. plugin 배포 워크플로우 자동화.
 
 ---
 
@@ -474,6 +535,32 @@ Plugin manifest에서 `"skills": ["./"]`로 선언된 스킬이 frontmatter의 `
 
 Plugin manifest에 최상위 `monitors` 키 지원. 세션 시작 또는 스킬 호출 시 자동으로 arm 되는 백그라운드 모니터를 정의할 수 있음.
 
+### `experimental` Manifest 섹션 (v2.1.129)
+
+`themes`와 `monitors`가 plugin manifest의 `"experimental"` 섹션 아래로 이동:
+
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "experimental": {
+    "themes": [...],
+    "monitors": [...]
+  }
+}
+```
+
+이전 최상위 선언은 점진적으로 deprecated. 신규 plugin은 `experimental` 사용.
+
+### Plugin Version Constraints Auto-update (v2.1.118)
+
+Pinned plugin이 version constraint(예: `"^1.2.0"`) 만족하는 가장 높은 git tag로 자동 업데이트. `git pull`처럼 작동하되 SemVer 범위 내에서.
+
+### Plugin 의존성 충돌 보고 (v2.1.111, v2.1.114)
+
+- **(v2.1.111)** `plugin install`이 conflicting/invalid/overly complex version requirement를 구분해서 보고
+- **(v2.1.114)** 이미 설치된 plugin과 dependency 버전 충돌 시 `range-conflict`로 정확히 보고 (이전에는 잘못 성공)
+
 ### PreCompact Hook 차단 (v2.1.105)
 
 Plugin hooks의 `PreCompact` 이벤트에서 exit code 2 또는 `{"decision":"block"}` 반환으로 컨텍스트 압축 자체를 차단 가능.
@@ -569,6 +656,46 @@ cc --plugin-dir /path/to/my-plugin
 
 ## Update History
 
+- **2026-06-05**: v2.1.143~2.1.165 변경사항 반영
+  - **`.claude/skills` 플러그인 마켓플레이스 없이 자동 로드 (v2.1.157)** + **`claude plugin init <name>`** 스캐폴드
+  - **`/plugin list --enabled/--disabled` (v2.1.163)** + **`/plugin` 인자 자동완성 (v2.1.157)**
+  - **`defaultEnabled: false` (v2.1.154)**: 명시 활성화 필요한 플러그인 선언
+  - **`marketplace remove --scope` (v2.1.153)** + **`skipLfs` 소스 옵션 (v2.1.153)**
+  - **Context-aware 추천 (v2.1.154, v2.1.152)**: Discover "suggested for this directory" + `pluginSuggestionMarketplaces` managed setting
+  - 플러그인 MCP 서버가 동일 command + 다른 env로 잘못 dedup 되던 버그 수정 (v2.1.152)
+  - `/doctor`가 제거된 마켓플레이스/플러그인 참조한 stale `enabledPlugins` 항목에 "not found" 보고하던 버그 수정 (v2.1.152)
+- **2026-05-15**: v2.1.133~2.1.142 변경사항 반영
+  - **Root-level `SKILL.md`이 스킬로 surfacing (v2.1.142)**: 플러그인 루트의 `SKILL.md`가 자동으로 스킬 등록. 단일 스킬 plugin은 `skills/<name>/SKILL.md` 구조 없이도 동작
+  - **`/plugin` LSP 서버 표시 (v2.1.142)**: 상세 패널에서 플러그인이 등록한 LSP 서버 확인 가능
+  - **`CLAUDE_CODE_PLUGIN_PREFER_HTTPS` 환경변수 (v2.1.141)**: GitHub 플러그인 clone 시 SSH 대신 HTTPS 우선
+  - **`claude plugin details <name>` (v2.1.139)**: 설치된 plugin의 세부 정보 조회 (등록된 컴포넌트 목록, 버전 등)
+  - **Plugin hooks cache 정리 수정 (v2.1.136)**: 일부 플러그인의 hook cache가 누적되어 영향 주던 문제 해결
+  - **MCP 서버 timeout 수정 (v2.1.142)**: 원격 HTTP/SSE MCP 서버 timeout 시 정상 복구
+  - **`/mcp` Reconnect가 `.mcp.json` edits 인식 (v2.1.139)**: 서버 정의 수정 후 reconnect만으로 반영
+  - **MCP 서버가 `/clear` 후 사라지던 버그 수정 (v2.1.136)**
+  - **MCP OAuth refresh token 손실 수정 (v2.1.136)**: 동시 OAuth 서버 사용 시 발생하던 token 손실
+  - **API redacted thinking blocks 에러 수정 (v2.1.136)**
+- **2026-05-07**: v2.1.115~2.1.132 변경사항 반영
+  - **`--plugin-url <url>` direct install (v2.1.129)**: `.zip` archive URL 직접 설치
+  - **`--plugin-dir`이 .zip archive 수용 (v2.1.128)**
+  - **`claude plugin prune` (v2.1.121)**: orphaned dependencies 제거
+  - **`claude plugin tag` (v2.1.118)**: 릴리스 git tag 생성 + version 검증
+  - **`themes`/`monitors`가 manifest의 `"experimental"` 섹션으로 이동 (v2.1.129)**
+  - **Plugin version constraints auto-update (v2.1.118)**: SemVer 범위 내 자동 업데이트
+  - **Plugin 의존성 충돌 보고 (v2.1.111, v2.1.114)**: `range-conflict` 정확 보고
+  - **Concurrent local/claude.ai MCP server connect (v2.1.117)**: 시작 시간 단축
+  - **Plugin install이 missing dependencies 자동 설치 (v2.1.117)**: `marketplace add`도 자동 resolve
+  - **`blockedMarketplaces`/`strictKnownMarketplaces` enforce (v2.1.117)**: install/update/refresh에 적용
+  - **Reconnecting MCP servers tool list flooding 수정 (v2.1.128)**
+  - **`claude_code.pull_request.count` OTel metric에 MCP tools 포함 (v2.1.129)**
+  - **Gateway `/v1/models` discovery opt-in (v2.1.129)**
+  - **Stdio MCP servers 비프로토콜 출력 시 메모리 무한 증가 수정 (v2.1.132)**
+  - **MCP `tools/list` silently 실패 시 0 tools 표시 수정 (v2.1.132)**
+  - `cleanupPeriodDays`가 `~/.claude/tasks/`, shell snapshots, backups 포함 (v2.1.117)
+  - SDK `reload_plugins`가 user MCP servers 직렬 연결하던 버그 수정 (v2.1.117)
+  - Bedrock 추론 프로파일 thinking disabled 시 실패 버그 수정 (v2.1.117)
+  - WebFetch가 큰 HTML 페이지에서 hang 하던 버그 수정 (v2.1.117)
+  - HTTP 204 No Content 응답에서 crash → 명확한 에러 (v2.1.117)
 - **2026-04-19**: v2.1.110~2.1.114 변경사항 반영
   - **Plugin 의존성 에러 핸들링 개선 (v2.1.111)**: conflicting/invalid/overly complex version requirement를 구분해서 보고. `plugin update` 후 stale resolved version 수정. `plugin install`이 중단된 이전 설치에서 복구
   - **`plugin install` 의존성 충돌 보고 (v2.1.114)**: 이미 설치된 플러그인과 dependency 버전이 충돌할 때 install이 잘못 성공하던 버그 수정 — 이제 `range-conflict`로 보고
@@ -613,4 +740,4 @@ cc --plugin-dir /path/to/my-plugin
   - `git-subdir` 소스 타입 (v2.1.69)
 - **2026-03-10**: 초기 작성
 
-**Last Updated**: 2026-04-15
+**Last Updated**: 2026-06-05

@@ -1,7 +1,7 @@
 # .claude/rules/ - Source of Truth
 
 > **Source**: [code.claude.com/docs/en/memory](https://code.claude.com/docs/en/memory)
-> **Updated**: 2026-04-24 (v2.1.119) - Bash 권한/sandbox 보안 강화 반영, 파일 자체 변경 없음
+> **Updated**: 2026-06-05 (v2.1.165) - 셸 startup 파일 쓰기 프롬프트, WebFetch 규칙 우선순위, read-before-edit grep 완화, $HOME deny 규칙 반영
 > **Purpose**: .claude/rules/ 시스템 유일한 참조 문서
 
 ---
@@ -154,6 +154,107 @@ ln -s ~/company-standards/security.md .claude/rules/security.md
 - **(v2.1.98)** `/dev/tcp/...` 또는 `/dev/udp/...`로의 리다이렉트 시 프롬프트 표시
 - **(v2.1.101)** `permissions.deny` 규칙이 PreToolUse 훅의 `permissionDecision: "ask"` 결정을 올바르게 오버라이드
 
+### WSL 정책 상속 (v2.1.118)
+
+`wslInheritsWindowsSettings` 정책 추가. WSL 환경에서 Windows side의 managed settings(보안 정책 포함)를 자동 상속.
+
+```json
+{
+  "wslInheritsWindowsSettings": true
+}
+```
+
+### Auto Mode 기본 리스트 확장 (v2.1.118)
+
+`allow`/`soft_deny`/`environment` 리스트에 `"$defaults"` 토큰 사용 시 빌트인 기본 리스트를 그대로 유지하면서 사용자 항목 추가:
+
+```json
+{
+  "permissions": {
+    "allow": ["$defaults", "Bash(my-tool:*)"]
+  }
+}
+```
+
+### `blockedMarketplaces` 패턴 강제 (v2.1.119)
+
+`blockedMarketplaces`의 `hostPattern`과 `pathPattern`이 정확히 enforce 되도록 수정. 이전에는 일부 패턴이 적용 안 되던 보안 버그 해결.
+
+### `allowManagedDomainsOnly` (v2.1.126)
+
+이 설정이 정확히 enforce 되도록 수정 — 관리되는 도메인 외에는 모든 외부 호출이 거부됨.
+
+### In-project Path Allow Rules (v2.1.129)
+
+`Edit(.claude/**)`, `Read(./src/**)` 등 프로젝트 내부 경로에 대한 allow rule이 honor 되도록 수정. 이전에는 일부 in-project 패턴이 무시되던 버그.
+
+### `deniedMcpServers` Wildcard Scheme (v2.1.129)
+
+```json
+{
+  "deniedMcpServers": ["http://*", "ws://*"]
+}
+```
+
+스키마 wildcard로 차단 가능. URL prefix 패턴이 정확히 매칭되도록 수정.
+
+### Server-managed Settings Policy (v2.1.129)
+
+엔터프라이즈 사용자에게 server-managed settings policy가 정확히 적용되도록 수정. 이전에는 일부 케이스에서 적용 안 되던 버그.
+
+### 병렬 Shell Tool 거부 처리 (v2.1.128)
+
+병렬 shell tool calls에서 read-only 명령 하나가 실패하면 형제(sibling) 명령들도 자동 cancel. 이전에는 형제들이 계속 실행되던 동작.
+
+### PowerShell Tool 권한 (v2.1.119, v2.1.126)
+
+- **(v2.1.119)** PowerShell 명령이 permission mode에서 Bash와 동일하게 auto-approvable
+- **(v2.1.126)** Windows에서 PowerShell이 primary shell로 인식 (Git Bash 부재 시)
+- **(v2.1.126)** PowerShell tool에서 bare `--`가 stop-parsing flag로 mis-flag 되던 버그 수정
+
+### 셸 Startup 파일 / 빌드 설정 쓰기 프롬프트 (v2.1.160)
+
+- **(v2.1.160)** 셸 startup 파일(`.zshenv`, `.zlogin`, `.bash_login`)과 `~/.config/git/`에 쓰기 전 프롬프트 표시 — 의도치 않은 명령 실행 방지
+- **(v2.1.160)** `acceptEdits` 모드에서도 코드 실행을 부여하는 빌드 도구 설정 파일에 쓰기 전 프롬프트: `.npmrc`, `.yarnrc*`, `bunfig.toml`, `.bazelrc`, `.pre-commit-config.yaml`, `.devcontainer/` 등
+
+### Read-before-edit grep 완화 (v2.1.160, v2.1.144)
+
+- **(v2.1.160)** `grep`/`egrep`/`fgrep` 단일 파일 명령이 read-before-edit 체크를 만족 — `grep`으로 파일을 본 후 별도 `Read` 없이 Edit 가능
+- **(v2.1.144)** `head`/`tail` 파일 보기도 read-before-edit 체크를 만족. `egrep`/`fgrep`/`git grep`/`git diff`의 "no matches"(exit code 1)가 더 이상 명령 실패로 보고되지 않음
+
+### WebFetch 권한 규칙 우선순위 (v2.1.162)
+
+**(v2.1.162)** WebFetch 권한 규칙이 빌트인 preapproved 도메인에도 적용되도록 수정. 명시적 `WebFetch(domain:...)` deny/ask/allow 규칙이 preapproved-host 자동 허용보다 우선.
+
+### `$HOME` 경로 deny 규칙 (v2.1.163)
+
+**(v2.1.163)** home 디렉토리 경로에 대한 deny 규칙(예: `Read(~/Desktop/**)`)이 `$HOME`을 통해 경로를 참조하는 Bash 명령도 차단하도록 수정.
+
+### hook `if` `$()`/`$VAR` 매칭 (v2.1.163)
+
+**(v2.1.163)** hook `if: "Bash(...)"` 조건이 `$()`나 `$VAR`를 포함한 모든 Bash 명령에 잘못 발화하던 버그 수정 — 이제 subshell과 backtick 내부 명령에도 정확히 매칭.
+
+### Windows 권한 규칙 / Read deny (v2.1.162)
+
+- **(v2.1.162)** 백슬래시 표기(`~\`, `\\server\share`)나 대소문자 변형 경로로 작성된 Windows 권한 규칙이 매칭 안 되던 버그 수정
+- **(v2.1.162)** Read deny 규칙이 Glob/Grep 결과에서 파일을 숨기도록 수정
+
+### 데이터 유출 탐지 / 위험 경로 (v2.1.154)
+
+- **(v2.1.154)** auto-mode classifier의 데이터 유출(특히 저장소 내용 대량 전송) 탐지 개선
+- **(v2.1.154)** `HOME`에 trailing slash가 있을 때 `rm -rf $HOME`이 위험 경로로 차단 안 되던 버그 수정
+
+### PowerShell `cd` 권한 우회 (v2.1.149)
+
+- **(v2.1.149)** PowerShell 빌트인 `cd` 함수(`cd..`, `cd\`, `cd~`, `X:`)가 작업 디렉토리를 감지 없이 변경해 이후 명령이 워크스페이스 밖을 읽던 권한 우회 버그 수정
+- **(v2.1.149)** git worktree에서 sandbox 쓰기 allowlist가 공유 `.git`만이 아닌 main 저장소 루트 전체를 덮던 버그 수정 (`hooks/`, `config`는 denied)
+- **(v2.1.149)** PowerShell prefix/wildcard allow 규칙(예: `PowerShell(dotnet.exe build *)`)이 네이티브 실행 파일/스크립트를 사전 승인 안 하던 버그 수정
+- **(v2.1.145)** 비-allowlist 환경변수에 대한 bare 변수 할당이 자동 승인되던 권한 프롬프트 우회 버그 수정
+
+### Find Tool Allow Rule (v2.1.114) 재정의 — 보충
+
+`Bash(find:*)` allow rule 하에서도 `find -exec`/`find -delete`는 자동 승인되지 않음. 필요 시 명시적 권한 부여. **(v2.1.120 보강)** `find` 명령이 file descriptor를 소진해 host가 죽던 버그가 수정됨 (macOS/Linux).
+
 ---
 
 ## 8. Best Practice
@@ -202,6 +303,37 @@ ln -s ~/company-standards/security.md .claude/rules/security.md
 
 ## Update History
 
+- **2026-06-05**: v2.1.143~2.1.165 변경사항 반영
+  - **셸 startup 파일 / 빌드 설정 쓰기 프롬프트 (v2.1.160)**: `.zshenv` 등 + `acceptEdits`에서 `.npmrc`/`.bazelrc`/`.devcontainer/` 등
+  - **Read-before-edit grep/head/tail 완화 (v2.1.160, v2.1.144)**: 단일 파일 grep/head/tail이 read 체크 만족, no-match exit 1이 실패로 보고 안 됨
+  - **WebFetch 권한 규칙 우선순위 (v2.1.162)**: 명시적 규칙이 preapproved-host 자동 허용보다 우선
+  - **`$HOME` 경로 deny 규칙 (v2.1.163)**: `$HOME` 참조 Bash 명령도 차단
+  - **hook `if` `$()`/`$VAR` 매칭 수정 (v2.1.163)**: subshell/backtick 내부도 정확 매칭
+  - **Windows 백슬래시 권한 규칙 + Read deny Glob/Grep 숨김 (v2.1.162)**
+  - **데이터 유출 탐지 개선 + `rm -rf $HOME` trailing slash 차단 (v2.1.154)**
+  - **PowerShell `cd` 권한 우회 + worktree sandbox allowlist + bare 변수 할당 우회 수정 (v2.1.149, v2.1.145)**
+- **2026-05-15**: v2.1.133~2.1.142 변경사항 반영
+  - **`settings.autoMode.hard_deny` (v2.1.136)**: auto mode에서 무조건 차단할 항목 정의. allow/soft_deny와 별개로 우선 적용 — escape 불가능
+  - **`parentSettingsBehavior` (v2.1.133)**: managed/policy 설정의 병합 방식을 admin-tier에서 제어. 기존 user 설정과 어떻게 병합/덮어쓸지 지정
+  - **`worktree.baseRef` 설정 (v2.1.133)**: 새 worktree 분기 기준을 `fresh`(원격 HEAD) 또는 `head`(로컬 HEAD)로 선택
+  - **`sandbox.bwrapPath` / `sandbox.socatPath` (v2.1.133)**: bubblewrap/socat 바이너리 경로를 명시. 사용자 정의 설치 환경에서 sandbox 활성화 가능
+  - **Hooks가 `effort.level` 받음 (v2.1.133)**: hook context에 `effort.level` 필드 + `$CLAUDE_EFFORT` 환경변수 노출 — effort에 따라 hook 분기 가능
+  - **Hook JSON 출력 `terminalSequence` 필드 (v2.1.141)**: 알림 hook이 터미널 escape sequence를 직접 출력 가능
+  - **병렬 세션 401 race condition 수정 (v2.1.133)**
+  - **Edit/Write allow rule이 drive root 패턴 인식 (v2.1.133)**: `Edit(C:\\**)` 같은 윈도우 root-level 패턴 정상 매칭
+- **2026-05-07**: v2.1.115~2.1.132 변경사항 반영
+  - **WSL Windows-side managed settings 상속 (v2.1.118)**: `wslInheritsWindowsSettings` 정책 추가
+  - **`"$defaults"` 토큰으로 auto mode 빌트인 리스트 확장 (v2.1.118)**: allow/soft_deny/environment에서 사용
+  - **`blockedMarketplaces` host/path 패턴 enforce (v2.1.119)**
+  - **`allowManagedDomainsOnly` 정책 정확 enforce (v2.1.126)**
+  - **In-project path allow rules honor (v2.1.129)**: `Edit(./.claude/**)` 등 프로젝트 내부 패턴
+  - **`deniedMcpServers` wildcard scheme (v2.1.129)**
+  - **Server-managed settings policy 적용 수정 (v2.1.129)**
+  - **PowerShell auto-approvable in permission mode (v2.1.119)**: Bash와 동일 처리
+  - **`--dangerously-skip-permissions` 보호 경로 우회 (v2.1.121, v2.1.126)**
+  - 병렬 shell tool에서 read-only 명령 실패 시 sibling 자동 cancel (v2.1.128)
+  - `find -exec`/`find -delete`는 `Bash(find:*)` allow rule하에서도 명시 권한 필요 (v2.1.114, 보강 v2.1.120 host crash 수정)
+  - `managed-settings.d/` drop-in 파일 강화 (v2.1.118): 알파벳 순 병합
 - **2026-04-19**: v2.1.110~2.1.114 변경사항 반영
   - **Bash 권한 관대화 (v2.1.111)**: Read-only Bash 명령에 glob 패턴 사용(`ls *.ts`)과 `cd <project-dir> && ...` 형태의 명령이 더 이상 권한 프롬프트를 띄우지 않음
   - **`cd <current-directory> && git ...` 권한 프롬프트 제거 (v2.1.114)**: `cd`가 no-op일 경우 git 명령 실행 시 프롬프트 없음
